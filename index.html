@@ -29,6 +29,8 @@ input:focus,button:focus-visible{outline:3px solid var(--acc);outline-offset:1px
 .num{font:700 1.2rem/1.2 ui-monospace,Consolas,monospace;word-break:break-all}
 .lbl{font-size:.78rem;color:var(--mute)}
 button.copy{font:inherit;border:0;border-radius:8px;cursor:pointer;padding:9px 14px;background:var(--acc);color:var(--accink);font-weight:600;flex:none}
+.btns{display:flex;gap:6px;flex:none}
+button.copy.sec{background:var(--ink);color:var(--bg)}
 .an{margin:8px 0 0;padding:0;list-style:none;font-size:.92rem}
 .an li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line);cursor:pointer}
 .an b{font-family:ui-monospace,Consolas,monospace;text-align:right;word-break:break-all}
@@ -179,7 +181,7 @@ function render(){
   $("#list").innerHTML=r.length?r.map(p=>{
     const [l,v]=p.n[0],rest=p.n.slice(1);
     return `<article class="card"><h3>${esc(p.name)}</h3>
-<div class="oem"><div><div class="lbl">${esc(l)}</div><div class="num">${esc(v)}</div></div>${tab==="sidem"?`<button class="copy" data-photo="${esc(v)}">Схема</button>`:`<button class="copy" data-n="${esc(v)}">Копировать</button>`}</div>
+<div class="oem"><div><div class="lbl">${esc(l)}</div><div class="num">${esc(v)}</div></div><div class="btns">${tab==="sidem"?`<button class="copy sec" data-photo="${esc(v)}">Схема</button>`:""}<button class="copy" data-n="${esc(v)}">Копировать</button></div></div>
 ${rest.length?`<ul class="an">${rest.map(a=>`<li ${tab==="sidem"?`data-photo="${esc(a[1])}"`:`data-n="${esc(a[1])}"`}><span>${esc(a[0])}</span><b>${esc(a[1])}</b></li>`).join("")}</ul>`:""}
 ${p.note?`<div class="note">${esc(p.note)}</div>`:""}</article>`}).join(""):
   `<div class="empty">Ничего не найдено. Попробуйте другое слово («колодки», «фильтр») или выберите «Все».</div>`;
