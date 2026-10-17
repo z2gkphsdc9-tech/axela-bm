@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mazda Axela · бензин 1.5</title>
+<style>
+:root{--bg:#ecebe7;--card:#fff;--ink:#1d1f21;--mute:#6b6f73;--line:#d6d4cf;--acc:#a8232b;--accink:#fff;--chip:#dedcd6}
+@media (prefers-color-scheme:dark){:root{--bg:#141618;--card:#1e2124;--ink:#ecebe7;--mute:#9a9ea2;--line:#33373b;--acc:#e0575e;--accink:#141618;--chip:#2a2e32}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 "Segoe UI",system-ui,sans-serif;padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+main{max-width:720px;margin:0 auto}
+h1{font-size:1.6rem;margin:8px 0 4px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 16px}
+input{width:100%;font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--ink);border-radius:8px;padding:12px;font-size:1.15rem}
+input:focus,button:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.cars{display:flex;gap:8px;margin-bottom:12px}
+.car{flex:1;border:2px solid var(--ink);background:var(--card);color:var(--ink);font:inherit;font-weight:600;padding:10px 8px;border-radius:8px;cursor:pointer}
+.car[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.sub2{color:var(--mute);font-size:.88rem;margin:-4px 0 10px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:12px 0 10px}
+.chip{flex:none;border:0;background:var(--chip);color:var(--ink);font:inherit;font-size:.9rem;padding:7px 12px;border-radius:99px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+.count{color:var(--mute);font-size:.88rem;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px}
+.card h3{margin:0 0 10px;font-size:1.05rem}
+.oem{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--bg);border-radius:8px;padding:10px 12px}
+.num{font:700 1.2rem/1.2 ui-monospace,Consolas,monospace;word-break:break-all}
+.lbl{font-size:.78rem;color:var(--mute)}
+button.copy{font:inherit;border:0;border-radius:8px;cursor:pointer;padding:9px 14px;background:var(--acc);color:var(--accink);font-weight:600;flex:none}
+.an{margin:8px 0 0;padding:0;list-style:none;font-size:.92rem}
+.an li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line);cursor:pointer}
+.an b{font-family:ui-monospace,Consolas,monospace;text-align:right;word-break:break-all}
+.note{margin-top:8px;font-size:.86rem;color:var(--mute)}
+.empty{text-align:center;color:var(--mute);padding:28px 8px}
+.foot{color:var(--mute);font-size:.8rem;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+<h1>Mazda Axela · бензин</h1>
+<p class="sub">Двигатель 1.5 SKYACTIV-G. Введите деталь или номер: «колодки», «фильтр», «KYB».</p>
+<input id="q" type="search" placeholder="Что ищем?" autocomplete="off" aria-label="Поиск запчасти">
+<div class="chips" id="cats" role="group" aria-label="Категории"></div>
+<div class="count" id="count" aria-live="polite"></div>
+<div id="list"></div>
+<p class="foot">Неофициальный справочник. Нажмите на любой номер, чтобы скопировать. Перед покупкой сверяйте по VIN: рестайлинг и комплектация меняют деталь.</p>
+</main>
+
+<script>
+/* name — название; cat — категория; kw — синонимы для поиска;
+   n — номера: [подпись, номер]; первый показывается крупно; note — примечание */
+const M="Mazda";
+const PARTS=[
+{cat:"ТО",name:"Фильтр масляный",kw:"масло,oil",n:[[M,"PE01-14-302B"]]},
+{cat:"ТО",name:"Фильтр воздушный",kw:"воздух,air",n:[[M,"P53N-13-3A0"]]},
+{cat:"ТО",name:"Фильтр салонный",kw:"салон,пыльцевой,cabin",n:[[M,"KD45-61-J6X"]]},
+{cat:"ТО",name:"Фильтр АКПП",kw:"коробка,автомат,atf",n:[[M,"FZ01-21-500"],[M,"FZ11-21-500"]]},
+{cat:"ТО",name:"Пробка масляного поддона",kw:"сливная пробка,поддон,картер",n:[[M,"FS50-21-249"]]},
+{cat:"ТО",name:"Прокладка сливной пробки",kw:"шайба,кольцо,поддон",n:[[M,"99564-1400"]]},
+{cat:"Топливо и зажигание",name:"Насос топливный в бак",kw:"бензонасос,топливный насос",n:[[M,"PEAR-13-350"]]},
+{cat:"Топливо и зажигание",name:"Фильтр грубой очистки топлива",kw:"сетка,бензонасос,фильтр топлива",n:[[M,"PEAR-13-ZE1"]]},
+{cat:"Топливо и зажигание",name:"Катушка зажигания",kw:"катушки,зажигание",n:[[M,"PE20-18-100A"]]},
+{cat:"Топливо и зажигание",name:"Свеча зажигания",kw:"свечи",n:[[M,"PE5R-18-110"]]},
+{cat:"Топливо и зажигание",name:"Форсунка топливная",kw:"инжектор,форсунки",n:[[M,"P501-13-250"]]},
+{cat:"Двигатель",name:"Крышка радиатора",kw:"охлаждение,радиатор",n:[[M,"PE11-15-205"]]},
+{cat:"Двигатель",name:"Термостат",kw:"охлаждение,thermostat",n:[[M,"P501-15-171"]]},
+{cat:"Двигатель",name:"Прокладка клапанной крышки",kw:"клапанная,крышка",n:[[M,"P301-10-235"]]},
+{cat:"Двигатель",name:"Ремень приводной (короткий)",kw:"ремень,ручеёк,ручеек",n:[[M,"P301-15-908"]]},
+{cat:"Двигатель",name:"Ремень приводной (длинный)",kw:"ремень,ручеёк,ручеек",n:[[M,"P301-15-909B"]]},
+{cat:"Двигатель",name:"Натяжитель ремней",kw:"ролик,натяжной,ремень",n:[[M,"P51D-15-980A"]]},
+{cat:"Тормоза",name:"Колодки тормозные передние",kw:"колодки,pads",n:[[M,"BHY1-33-28ZA"]]},
+{cat:"Тормоза",name:"Колодки тормозные задние",kw:"колодки,pads",n:[[M,"B4Y0-26-48ZB"]]},
+{cat:"Тормоза",name:"Диск тормозной задний, D265 мм",kw:"диск,ротор",n:[[M,"BJS7-26-251B"]]},
+{cat:"Тормоза",name:"Диск тормозной передний вентилируемый, D280 мм",kw:"диск,ротор",n:[[M,"BJS7-33-251A"]]},
+{cat:"Ступицы",name:"Ступица задняя",kw:"подшипник,hub",n:[[M,"KD31-26-15XA"]]},
+{cat:"Ступицы",name:"Ступица передняя",kw:"подшипник,hub",n:[[M,"BJS7-33-04X"]]},
+{cat:"Подвеска",name:"Стойка амортизационная задняя",kw:"амортизатор,стойка",n:[[M,"BPP7-28-700B"]]},
+{cat:"Подвеска",name:"Пыльник с отбойником стойки задний",kw:"пыльник,отбойник,гофра",n:[[M,"BPP7-28-1A0B"]]},
+{cat:"Подвеска",name:"Пружина амортизатора заднего",kw:"пружина",n:[[M,"BJS9-28-011"]]},
+{cat:"Подвеска",name:"Стойка амортизационная передняя правая",kw:"амортизатор,стойка",n:[[M,"BPM5-34-700A"]]},
+{cat:"Подвеска",name:"Стойка амортизационная передняя левая",kw:"амортизатор,стойка",n:[[M,"BPM5-34-900A"]]},
+{cat:"Подвеска",name:"Пыльник амортизатора переднего",kw:"пыльник,гофра",n:[[M,"B45A-34-015A"]]},
+{cat:"Подвеска",name:"Отбойник амортизатора переднего",kw:"отбойник,буфер",n:[[M,"B45G-34-111"]]},
+{cat:"Подвеска",name:"Опорный подшипник амортизатора переднего",kw:"подшипник опоры",n:[[M,"BJS7-34-38XC"]]},
+{cat:"Подвеска",name:"Опора амортизатора переднего",kw:"верхняя опора,подушка",n:[[M,"BJS7-34-380"]]},
+{cat:"Подвеска",name:"Пружина амортизатора переднего",kw:"пружина",n:[[M,"BSS5-34-011"]]},
+{cat:"Подвеска",name:"Втулка стабилизатора переднего",kw:"втулка,резинка,стабилизатор",n:[[M,"GMH8-34-156A"]]},
+{cat:"Подвеска",name:"Втулка стабилизатора заднего",kw:"втулка,резинка,стабилизатор",n:[[M,"B45A-28-156"]]},
+{cat:"Подвеска",name:"Стойка стабилизатора передняя правая",kw:"линк,стойка",n:[[M,"B45A-34-150"]]},
+{cat:"Подвеска",name:"Стойка стабилизатора передняя левая",kw:"линк,стойка",n:[[M,"B45A-34-170"]]},
+{cat:"Подвеска",name:"Стойка стабилизатора задняя правая",kw:"линк,стойка",n:[[M,"KD31-28-170"]]},
+{cat:"Подвеска",name:"Стойка стабилизатора задняя левая",kw:"линк,стойка",n:[[M,"KD31-28-190"]]},
+{cat:"Подвеска",name:"Шаровая опора",kw:"шаровая,рычаг",n:[["Артикул","SB1862"]]},
+{cat:"Рулевое",name:"Тяга рулевая",kw:"рейка,тяга",n:[[M,"BJS8-32-240"]]},
+{cat:"Рулевое",name:"Пыльник рулевой тяги",kw:"пыльник,гофра",n:[[M,"BJS7-32-12X"]]},
+{cat:"Рулевое",name:"Наконечник рулевой тяги левый",kw:"наконечник",n:[[M,"BJS8-32-290"]]},
+{cat:"Рулевое",name:"Наконечник рулевой тяги правый",kw:"наконечник",n:[[M,"BJS8-32-280"]]},
+{cat:"Привод",name:"Пыльник ШРУСа",kw:"шрус,пыльник,граната,cv boot",n:[["Артикул","CD25016"]]},
+{cat:"Привод",name:"ШРУС внутренний левый",kw:"шрус,граната,привод,cv joint",n:[["Артикул","MZILM3A2"]]}
+];
+const cur=()=>PARTS;
+
+const $=s=>document.querySelector(s);
+const norm=s=>String(s).toLowerCase().replace(/ё/g,"е").trim();
+const key=s=>norm(s).replace(/[^a-zа-я0-9]/g,"");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let cat="";
+
+function buildCats(){
+  const cs=["Все",...new Set(cur().map(p=>p.cat))];
+  $("#cats").innerHTML=cs.map(c=>{const v=c==="Все"?"":c;return `<button class="chip" aria-pressed="${v===cat}" data-c="${v}">${c}</button>`}).join("");
+}
+function match(p,q){
+  if(!q)return true;
+  const hay=norm([p.name,p.cat,p.kw].join(" "));
+  const nums=key(p.n.map(a=>a[0]+a[1]).join(" "));
+  return norm(q).split(/\s+/).every(w=>hay.includes(w)||(key(w).length>1&&nums.includes(key(w))));
+}
+function render(){
+  const q=$("#q").value;
+  const r=cur().filter(p=>match(p,q)&&(!cat||p.cat===cat));
+  $("#count").textContent=r.length?`Найдено: ${r.length}`:"";
+  $("#list").innerHTML=r.length?r.map(p=>{
+    const [l,v]=p.n[0],rest=p.n.slice(1);
+    return `<article class="card"><h3>${esc(p.name)}</h3>
+<div class="oem"><div><div class="lbl">${esc(l)}</div><div class="num">${esc(v)}</div></div><button class="copy" data-n="${esc(v)}">Копировать</button></div>
+${rest.length?`<ul class="an">${rest.map(a=>`<li data-n="${esc(a[1])}"><span>${esc(a[0])}</span><b>${esc(a[1])}</b></li>`).join("")}</ul>`:""}
+${p.note?`<div class="note">${esc(p.note)}</div>`:""}</article>`}).join(""):
+  `<div class="empty">Ничего не найдено. Попробуйте другое слово («колодки», «фильтр») или выберите «Все».</div>`;
+}
+function copy(t,el,orig){
+  const done=()=>{if(el.classList.contains("copy")){el.textContent="Скопировано";setTimeout(()=>el.textContent=orig,1200)}};
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(done,done);
+}
+$("#q").oninput=render;
+$("#cats").onclick=e=>{const b=e.target.closest("button");if(!b)return;cat=b.dataset.c;buildCats();render()};
+$("#list").onclick=e=>{const el=e.target.closest("[data-n]");if(el)copy(el.dataset.n,el,"Копировать")};
+buildCats();render();
+</script>
+</body>
+</html>
